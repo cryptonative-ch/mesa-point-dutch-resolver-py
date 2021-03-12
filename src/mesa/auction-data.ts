@@ -1,14 +1,11 @@
+// Externals
 import { isAbsolute } from 'path'
 import csv from 'csvtojson'
 
-interface AuctionBid {
-  addressName: string
-  addressIndex: number
-  tokenInAmount: number
-  price: number
-}
+// Interfaces
+import { AuctionBidData } from 'src/interfaces/Auction'
 
-export const fixFieldTypes = ({ addressIndex, addressName, price, tokenInAmount }: AuctionBid): AuctionBid => ({
+export const fixFieldTypes = ({ addressIndex, addressName, price, tokenInAmount }: AuctionBidData): AuctionBidData => ({
   addressName,
   price: parseFloat(price.toString()),
   tokenInAmount: parseFloat(tokenInAmount.toString()),
