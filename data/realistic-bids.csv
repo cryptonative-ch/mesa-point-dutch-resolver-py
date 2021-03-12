@@ -1,0 +1,23 @@
+addressName,addressIndex,tokenInAmount,price
+martin-a,0,15000,1.100
+martin-a,0,10000,1.050
+martin-a,0,5000, 0.950
+martin-a,0,10000,0.850
+martin-a,0,10000,0.750
+martin-a,0,5000,0.650
+martin-b,1,2000,0.770
+martin-b,1,2000,0.765
+martin-b,1,2000,0.760
+martin-b,1,2000,0.755
+martin-b,1,2000,0.750
+martin-c,2,500,0.900
+martin-d,2,1000,1.300
+martin-d,2,1000,1.200
+martin-d,2,1000,0.700
+martin-d,2,1000,0.600
+martin-d,2,1000,0.500
+martin-e,3,1000,1.150
+martin-e,3,1000,1.100
+martin-e,3,1000,1.050
+martin-e,3,1000,0.200
+martin-e,3,1000,0.500
