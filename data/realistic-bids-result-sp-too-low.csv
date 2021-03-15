@@ -1,4 +1,4 @@
-addressName,bidid,addressIndex,tokenInAmount,price,amountToBid,status,currentBidSum
+addressName,bidid,addressIndex,tokenInAmount,price,tokenOutAmount,status,currentBidSum
 martin-a,0,0,15000,1.2,1.250E+4,1,
 martin-a,1,0,10000,1.05,9523.80952380952381,1,
 martin-a,2,0,5000,0.95,5263.15789473684211,1,
