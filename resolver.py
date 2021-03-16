@@ -4,32 +4,34 @@ import csv, sys, json
 from decimal import *
 getcontext().prec = 18
 
+
+getcontext().rounding=ROUND_UP
 class pointDutch():
 
 	def __init__(self):
-		helper = helperTools()
-		self.bidsUnsorted = helper.csvimport('data/realistic-bids.csv')
-		self.bidsSorted = helper.csvimport('data/realistic-bids-sort.csv')
+		self.helper = helperTools()
+		self.bidsUnsorted = self.helper.readCsv('data/realistic-bids.csv')
+		self.bidsSorted = self.helper.readCsv('data/realistic-bids-sort.csv')
 		self.tokenOutAmountTotal = 50000
 		self.clearingPrice = 0
 
 		for bid in self.bidsSorted:
 			bid['price'] = Decimal(bid['price'])
 			bid['tokenInAmount'] = Decimal(bid['tokenInAmount']) 
-			bid['tokenOutAmount'] = bid['tokenInAmount'] / bid['price']
+			bid['tokenOutAmount'] = Decimal(bid['tokenInAmount']) / Decimal(bid['price'])
 
 		for bid in self.bidsUnsorted:
 			bid['price'] = Decimal(bid['price'])
 			bid['tokenInAmount'] = Decimal(bid['tokenInAmount']) 
-			bid['tokenOutAmount'] = bid['tokenInAmount'] / bid['price']
+			bid['tokenOutAmount'] = Decimal(bid['tokenInAmount']) / Decimal(bid['price'])
 
 
 	def calcClearingPrice(self, bids):
 		print('------------------------------------------------------------')
-		print('   calculate  calcClearingPrice             ')
+		print('##        calculate  calcClearingPrice             ')
 		print('------------------------------------------------------------')
 
-		currentTokenOutAmount = self.tokenOutAmountTotal
+		tokenOutAmountToDistribute = self.tokenOutAmountTotal
 		i = 0
 
 		for bid in bids:
@@ -39,25 +41,25 @@ class pointDutch():
 
 			print('tokenOutAmount: {} $MESA ({} $DAI for {} $DAI per $MESA)'.format(tokenOutAmount, tokenInAmount, price))
 
-			currentTokenOutAmount = currentTokenOutAmount - tokenOutAmount
+			tokenOutAmountToDistribute = tokenOutAmountToDistribute - tokenOutAmount
 
-			print('currentTokenOutAmount: {} $MESA (Token left)'.format(currentTokenOutAmount))
+			print('tokenOutAmountToDistribute: {} $MESA (Token left)'.format(tokenOutAmountToDistribute))
 			print('---------------')
 
 
 			# currentBidSum.mul(amountToBuy) < fullAuctionAmountToSell.mul(tokenOutAmount)
 			# currentBidSum * amountToBuy < fullAuctionAmountToSell * tokenOutAmount
-			# currentBidSum * tokenInAmount < self.tokenOutAmountTotal * tokenOutAmount
+			# currentBidSum * tokenInAmount < tokenOutAmountTotal * tokenOutAmount
 
 			# all token taken, the price of the last bid is clearing price
-			#if currentBidSum > self.tokenOutAmountTotal:
+			#if currentBidSum > tokenOutAmountTotal:
 			
-			#if currentBidSum * tokenInAmount < self.tokenOutAmountTotal * tokenOutAmount:
+			#if currentBidSum * tokenInAmount < tokenOutAmountTotal * tokenOutAmount:
 
 
 			# stop if all token gone and take the clearingPrice last bid
 
-			if currentTokenOutAmount < 0:
+			if tokenOutAmountToDistribute < 0:
 				# set clearingPrice to first bid on which all token have sold out
 				clearingPrice = bids[i]['price']
 				# tokenOutAmount = bids[i-1]['tokenOutAmount']
@@ -77,13 +79,13 @@ class pointDutch():
 
 				break
 				
-			lastCurrentTokenOutAmount = currentTokenOutAmount
+			lastCurrentTokenOutAmount = tokenOutAmountToDistribute
 			i += 1
 
 
-	def tokenDistroEasyAction(self, bids, clearingPrice):
+	def tokenDistribution(self, bids, clearingPrice):
 		print('------------------------------------------------------------')
-		print('          tokenDistroEasyAction                   ')
+		print('##          tokenDistribution                   ')
 		print('------------------------------------------------------------')
 		print('clearingPrice: {}'.format(clearingPrice))
 
@@ -95,10 +97,13 @@ class pointDutch():
 			print('Bid ID {}'.format(bid['bidid']))
 
 			price = bid['price']
-			if price >= clearingPrice:
+			if price < clearingPrice:
+				print('No token for bid price {}'.format( price))
+			# if price >= clearingPrice:
+			else:
 				bid['status'] = 1
 				# set tokenOutAmount to the token, so that token left to sell exaclty all tokens
-			
+
 				if price == self.clearingPrice:
 					bid['tokenOutAmount'] = self.lastCurrentTokenOutAmount
 
@@ -117,87 +122,75 @@ class pointDutch():
 
 				print('tokenOutAmount: {} $MESA worth {} $DAI'.format(tokenOutAmount, bidCost))
 				print('{} $DAI not invested from {} $DAI, bid price {}'.format(excessCapital, tokenInAmount,  price))
-
-				print('Token Left: {:f} $MESA'.format(tokenOutAmountToDistribute))
-			else:
-				print('No token for bid price {}'.format( price))
+			
 
 		# with sorted csv
-				
-		if self.tokenOutAmountTotal == 0 or self.tokenOutAmountTotal > -1:
+		# Runding Errors make the tokenOutAmountTotal only near zero, not 0
+		if tokenOutAmountToDistribute < 1 and tokenOutAmountToDistribute > -1:
 			print('------------------------------------------------------------')
-			print('         Success - all token distributed')
+			print('##       Success - all token distributed')
 			print('------------------------------------------------------------')
-			
-			with open('data/realistic-bids-sorted-result.csv', 'w') as csvfile:
-				fieldnames = ['addressName', 'bidid','addressIndex', 'tokenInAmount', 'price', 'tokenOutAmount', 'status']
-				writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-				writer.writeheader()
-				for line in bids:
-					writer.writerow(line)
-		# with unsorted csv
-		elif self.tokenOutAmountTotal > 0:
-			print('------------------------------------------------------------------------')
-			print('         Fail! Not all token distributed! Settlement price is too high.')
-			print('------------------------------------------------------------------------')
-			with open('data/realistic-bids-result-sp-too-high.csv', 'w') as csvfile:
-				fieldnames = ['addressName', 'bidid','addressIndex', 'tokenInAmount', 'price', 'tokenOutAmount', 'status']
-				writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-				writer.writeheader()
-				for line in bids:
-					writer.writerow(line)
+			self.helper.writeCsv('data/realistic-bids-sorted-result.csv', bids)
 
-		elif self.tokenOutAmountTotal < 0:
+		# with unsorted csv
+		elif tokenOutAmountToDistribute > 0:
 			print('------------------------------------------------------------------------')
-			print('         Fail! To many token distributed! Settlement price is too low.')
+			print('##       Fail! Not all token distributed! Settlement price is too high.')
 			print('------------------------------------------------------------------------')
-			with open('data/realistic-bids-result-sp-too-low.csv', 'w') as csvfile:
-				fieldnames = ['addressName', 'bidid','addressIndex', 'tokenInAmount', 'price', 'tokenOutAmount', 'status']
-				writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-				writer.writeheader()
-				for line in bids:
-					writer.writerow(line)
-		# test
+			self.helper.writeCsv('data/realistic-bids-result-sp-too-high.csv', bids)
+
+		elif tokenOutAmountToDistribute < 0:
+			print('------------------------------------------------------------------------')
+			print('##       Fail! To many token distributed! Settlement price is too low.')
+			print('------------------------------------------------------------------------')
+			self.helper.writeCsv('data/realistic-bids-result-sp-too-low.csv', bids)
+
+		print('Token Left: {:f} $MESA'.format(tokenOutAmountToDistribute))
 
 		for bid in bids:
 			price = bid['price']
 			# no other bid can be below the bidding price
-			#if price > clearingPrice and self.tokenOutAmountTotal == 0:
+			#if price > clearingPrice and tokenOutAmountTotal == 0:
 				# print('error')
 
 
 class helperTools():
-	def csvimport(self, path):
+	def readCsv(self, path):
 	    reader = csv.DictReader(open(path, 'r'))
 	    dict_list = []
 	    for line in reader:
 	        dict_list.append(line)
 	    return dict_list
 
+	def writeCsv(self, path, bids):
+		with open(path, 'w') as csvfile:
+			fieldnames = ['addressName', 'bidid','addressIndex', 'tokenInAmount', 'price', 'tokenOutAmount', 'status']
+			writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+			writer.writeheader()
+			for line in bids:
+				writer.writerow(line)
 # print(json.dumps(bids, indent = 4))
 
 sim = pointDutch()
-
 sim.calcClearingPrice(sim.bidsSorted)
+sim.tokenDistribution(sim.bidsSorted, sim.clearingPrice)
 
-sim.tokenDistroEasyAction(sim.bidsUnsorted, sim.clearingPrice)
+sim.tokenDistribution(sim.bidsUnsorted, sim.clearingPrice)
 
-
-sim.tokenDistroEasyAction(sim.bidsUnsorted, sim.clearingPrice)
 
 print('------------------------------------------------------------')
-print('          test with a wrong settlement price  0.77      ')
+print('#          test with a wrong settlement price  0.77      ')
 print('------------------------------------------------------------')
 
 clearingPrice = Decimal(0.77)
-sim.tokenDistroEasyAction(sim.bidsSorted, clearingPrice)
+sim.tokenDistribution(sim.bidsSorted, clearingPrice)
 
 print('------------------------------------------------------------')
-print('          test with a wrong settlement price  0.75      ')
+print('#          test with a wrong settlement price  0.75      ')
 print('------------------------------------------------------------')
 
 clearingPrice = Decimal(0.75)
-sim.tokenDistroEasyAction(sim.bidsSorted, clearingPrice)
+sim.tokenDistribution(sim.bidsSorted, clearingPrice)
 
 print(sim.clearingPrice)
 print(sim.lastCurrentTokenOutAmount)
