@@ -2,7 +2,7 @@
 import csv, sys, json
 
 from decimal import *
-getcontext().prec = 18
+# getcontext().prec = 18
 
 
 getcontext().rounding=ROUND_UP
