@@ -15,19 +15,19 @@ on-chain, only the right solution will resolve and settle the auction.
 
 1. Pile has 10 token
 2. You have 4 bids, in ordered by price: 4 token for $2.5 ($10), 3 token for $2.2 ($6.6), 3 token for $2 ($6),  1 token for 1$ (1$)
-3. 
-   ```
-   10 (pile) - 4 (bid) = 6 (4 token for $2.5)
-   6  (pile) - 3 (bid) = 3 (3 token for $2.2)
-   3  (pile) - 3 (bid) = 0 (3 token for $2) // all token gone
-   ```
+3.
+```
+10 (pile) - 4 (bid) = 6 (4 token for $2.5)
+6  (pile) - 3 (bid) = 3 (3 token for $2.2)
+3  (pile) - 3 (bid) = 0 (3 token for $2) // all token gone
+```
 4. Pile is gone, so final settlement price is $2
 5. Distribute:
-   ```
-   4 tokens for $2 each, price to pay is $8, $2 back
-   3 tokens for $2 each, price to pay is $6, $0.6 back
-   3 tokens for $2 each, price to pay is $6, $0 back
-   ```
+```
+4 tokens for $2 each, price to pay is $8, $2 back
+3 tokens for $2 each, price to pay is $6, $0.6 back
+3 tokens for $2 each, price to pay is $6, $0 back
+```
 
 # Drawback
 
