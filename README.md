@@ -34,6 +34,7 @@ on-chain, only the right solution will resolve and settle the auction.
 3 tokens for $2 each, price to pay is $6, $0.6 back
 3 tokens for $2 each, price to pay is $6, $0 back
 ```
+6. Result: 10 tokens for $2 each results in raised capital of $20
 
 # Drawback
 
