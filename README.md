@@ -14,7 +14,13 @@ on-chain, only the right solution will resolve and settle the auction.
 # Example
 
 1. Pile has 10 token
-2. You have 4 bids, in ordered by price: 4 token for $2.5 ($10), 3 token for $2.2 ($6.6), 3 token for $2 ($6),  1 token for 1$ (1$)
+2. You have 4 bids, ordered by price
+```
+4 token for $2.5 ($10)
+3 token for $2.2 ($6.6)
+3 token for $2 ($6)
+1 token for 1$ (1$)
+```
 3.
 ```
 10 (pile) - 4 (bid) = 6 (4 token for $2.5)
